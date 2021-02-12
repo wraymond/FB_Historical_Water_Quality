@@ -1,0 +1,65 @@
+---
+title: "Historical_watershed_data_exploration"
+author: "Wendel Raymond"
+date: "February 11, 2021"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+## Historical False Bay watershed water quality analysis
+We will explore historical water wuality data collected around the False Bay watershed on San Juan Island. Most data will come diretly from the False Bay watershed, however, some data sets include samples from other adjacnet watersheds.
+
+```{r libraries, echo = FALSE, message = FALSE, warning = FALSE}
+library(dplyr)
+library(ggplot2)
+
+
+theme_set(theme_classic())
+
+gm_mean = function(x, na.rm=TRUE){
+  exp(sum(log(x[x > 0]), na.rm=na.rm) / length(x))
+}
+```
+
+### Data
+Read in data water quality data from UW/Friday Harbor Labs monitoring effort
+```{r}
+dat <- read.csv("../Historic data/SJI_watershed_raw_data.csv", header = TRUE, stringsAsFactors = FALSE)
+```
+
+#### Data checking and adjustment
+```{r}
+str(dat)
+
+## Format Date ##
+dat$Date <- as.Date(dat$Date,  format = "%m/%d/%Y")
+
+## Create Julian Date ##
+dat$Date_J <- format(dat$Date, "%j")
+```
+
+### Data summaries
+Seperate sampling instances that has a no measuremnts (no water to measure), single measurments (e.g. air temp was only measured once), and multiple measures (e.g. DO was measured three times per sampling instance). 
+```{r}
+dat.sum <- dat %>%
+  group_by(site_no, Date) %>% 
+  summarise(Air_temp_C = mean(Air_temp_C, na.rm = TRUE),
+            DO_mgL = mean(DO_.mg.L, na.rm = TRUE),
+            pH = mean(pH, na.rm = TRUE),
+            Tur_nut = mean(Turbidity_ntu, na.rm = TRUE),
+            F_Coli_col100mL = mean(F_coliform_col.100mL, na.rm = TRUE),
+            F_Coli_GM_col100mL = gm_mean(F_coliform_col.100mL, na.rm = TRUE),
+            NO3_mgL = mean(Nitrate_mg.L, na.rm = TRUE),
+            PO4_mgL = mean(Phosphate_mg.L, na.rm = TRUE),
+            Flow_cfs = mean(Flow_cfs, na.rm = TRUE))
+
+dat.sum[is.nan(dat.sum)] <- NA
+
+```
+
+```{r}
+ggplot(dat.sum) +
+  geom_line(aes(x = Date, y = Air_temp_C, color = site_no))
+```
+
