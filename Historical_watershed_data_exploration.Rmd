@@ -11,9 +11,7 @@ editor_options:
 We will explore historical water wuality data collected around the False Bay watershed on San Juan Island. Most data will come diretly from the False Bay watershed, however, some data sets include samples from other adjacnet watersheds.
 
 ```{r libraries, echo = FALSE, message = FALSE, warning = FALSE}
-library(dplyr)
-library(ggplot2)
-
+library(tidyverse)
 
 theme_set(theme_classic())
 
@@ -24,12 +22,12 @@ gm_mean = function(x, na.rm=TRUE){
 
 ### Data
 Read in data water quality data from UW/Friday Harbor Labs monitoring effort
-```{r}
+```{r, echo = FALSE, message = FALSE, warning = FALSE}
 dat <- read.csv("../Historic data/SJI_watershed_raw_data.csv", header = TRUE, stringsAsFactors = FALSE)
 ```
 
 #### Data checking and adjustment
-```{r}
+```{r, echo = FALSE, message = FALSE, warning = FALSE}
 str(dat)
 
 ## Format Date ##
@@ -41,25 +39,111 @@ dat$Date_J <- format(dat$Date, "%j")
 
 ### Data summaries
 Seperate sampling instances that has a no measuremnts (no water to measure), single measurments (e.g. air temp was only measured once), and multiple measures (e.g. DO was measured three times per sampling instance). 
-```{r}
+```{r, echo = FALSE, message = FALSE, warning = FALSE}
+## Mean over site and date. Not all params have multiple measures though ##
 dat.sum <- dat %>%
+  filter(site_no != "FB2b") %>% 
   group_by(site_no, Date) %>% 
   summarise(Air_temp_C = mean(Air_temp_C, na.rm = TRUE),
+            Water_temp_C = mean(Water_temp_C, na.rm = TRUE),
             DO_mgL = mean(DO_.mg.L, na.rm = TRUE),
             pH = mean(pH, na.rm = TRUE),
-            Tur_nut = mean(Turbidity_ntu, na.rm = TRUE),
+            Tur_NTU = mean(Turbidity_ntu, na.rm = TRUE),
             F_Coli_col100mL = mean(F_coliform_col.100mL, na.rm = TRUE),
             F_Coli_GM_col100mL = gm_mean(F_coliform_col.100mL, na.rm = TRUE),
             NO3_mgL = mean(Nitrate_mg.L, na.rm = TRUE),
             PO4_mgL = mean(Phosphate_mg.L, na.rm = TRUE),
             Flow_cfs = mean(Flow_cfs, na.rm = TRUE))
 
-dat.sum[is.nan(dat.sum)] <- NA
+## Convert NaNs to NA, yes use is.na ##
+dat.sum[is.na(dat.sum)] <- NA
 
+
+## Nutrient data ##
+dat.nut <- dat.sum %>% 
+  filter(NO3_mgL > 0 & PO4_mgL > 0)
 ```
 
-```{r}
+#### Plots
+Air temperature
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE, fig.width = 14, fig.height = 6}
+ggplot(dat.nut) +
+  geom_point(aes(x = Date, y = Air_temp_C), color = "#FF6A6A") +
+  ylab("Air temperature (C)") +
+  xlab("Date") +
+  scale_x_date(date_breaks = "3 months", date_labels = "%m-%Y") +
+  scale_y_continuous(limits = c(0, 40)) +
+  theme(axis.text.x=element_text(angle = 60, hjust = 1)) +
+  facet_wrap(~site_no)
+```
+
+Water Nutrients
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE, fig.width = 14, fig.height = 6}
+## Nitrate ##
+ggplot(dat.nut) +
+  geom_point(aes(x = Date, y = NO3_mgL), color = "#543DEB") +
+  ylab("Nitrate (mg/L)") +
+  xlab("Date") +
+  scale_x_date(date_breaks = "3 months", date_labels = "%m-%Y") +
+  scale_y_continuous(limits = c(0, 8)) +
+  theme(axis.text.x=element_text(angle = 60, hjust = 1)) +
+  facet_wrap(~site_no)
+
+## Phosphate ##
+ggplot(dat.nut) +
+  geom_point(aes(x = Date, y = PO4_mgL), color = "#D47A26") +
+  ylab("Phosphate (mg/L)") +
+  xlab("Date") +
+  scale_x_date(date_breaks = "3 months", date_labels = "%m-%Y") +
+  scale_y_continuous(limits = c(0, 1.5)) +
+  theme(axis.text.x=element_text(angle = 60, hjust = 1)) +
+  facet_wrap(~site_no)
+```
+
+Water properties
+
+```{r,echo = FALSE, message = FALSE, warning = FALSE, fig.width = 14, fig.height = 6}
+## Water temp ##
 ggplot(dat.sum) +
-  geom_line(aes(x = Date, y = Air_temp_C, color = site_no))
+  geom_point(aes(x = Date, y = Water_temp_C), color = "#2DAFFA") +
+  ylab("Water temperature (C)") +
+  xlab("Date") +
+  scale_x_date(date_breaks = "3 months", date_labels = "%m-%Y") +
+  scale_y_continuous(limits = c(0, 30)) +
+  theme(axis.text.x=element_text(angle = 60, hjust = 1)) +
+  facet_wrap(~site_no)
+
+## DO ## 
+ggplot(dat.sum) +
+  geom_point(aes(x = Date, y = DO_mgL), pch = 1) +
+  ylab("Dissolved O2 (mg/L)") +
+  xlab("Date") +
+  scale_x_date(date_breaks = "3 months", date_labels = "%m-%Y") +
+  scale_y_continuous(limits = c(0, 20)) +
+  theme(axis.text.x=element_text(angle = 60, hjust = 1)) +
+  facet_wrap(~site_no)
+
+## pH ##
+ggplot(dat.sum) +
+  geom_point(aes(x = Date, y = pH), color = "#CD0000") +
+  ylab("pH") +
+  xlab("Date") +
+  scale_x_date(date_breaks = "3 months", date_labels = "%m-%Y") +
+  scale_y_continuous(limits = c(6, 9)) +
+  theme(axis.text.x=element_text(angle = 60, hjust = 1)) +
+  facet_wrap(~site_no)
+
+## Turbidity ##
+ggplot(dat.sum) +
+  geom_point(aes(x = Date, y = Tur_NTU), color = "#8B4726") +
+  ylab("Turbidity (NTU)") +
+  xlab("Date") +
+  scale_x_date(date_breaks = "3 months", date_labels = "%m-%Y") +
+  scale_y_continuous(limits = c(0, 120)) +
+  theme(axis.text.x=element_text(angle = 60, hjust = 1)) +
+  facet_wrap(~site_no)
+
 ```
 
