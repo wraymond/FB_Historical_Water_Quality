@@ -92,22 +92,22 @@ Water Nutrients
 ```{r dpi = 600, echo = FALSE, message = FALSE, warning = FALSE, fig.width = 14, fig.height = 6}
 ## Nitrate ##
 ggplot(dat.nut) +
-  geom_line(aes(x = Date, y = NO3_umol), color = "#543DEB") +
-  ylab("Nitrate (umol/L)") +
+  geom_line(aes(x = Date, y = NO3_mgL), color = "#543DEB") +
+  ylab("Nitrate (mg/L)") +
   xlab("Date") +
   scale_x_date(date_breaks = "3 months", date_labels = "%m-%Y") +
-  scale_y_continuous(limits = c(0, 50)) +
+  scale_y_continuous(limits = c(0, 10)) +
   theme(axis.text.x=element_text(angle = 60, hjust = 1)) +
   theme(text = element_text(size = 15)) +
   facet_wrap(~site_no, nrow = 3, ncol = 1)
 
 ## Phosphate ##
 ggplot(dat.nut) +
-  geom_line(aes(x = Date, y = PO4_umol), color = "#D47A26") +
-  ylab("Phosphate (umol/L)") +
+  geom_line(aes(x = Date, y = PO4_mgL), color = "#D47A26") +
+  ylab("Phosphate (mg/L)") +
   xlab("Date") +
   scale_x_date(date_breaks = "3 months", date_labels = "%m-%Y") +
-  scale_y_continuous(limits = c(0, 20)) +
+  scale_y_continuous(limits = c(0, 5)) +
   theme(axis.text.x=element_text(angle = 60, hjust = 1)) +
   theme(text = element_text(size = 15)) +
   facet_wrap(~site_no, nrow = 3, ncol = 1)
