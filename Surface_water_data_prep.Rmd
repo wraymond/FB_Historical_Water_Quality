@@ -1,0 +1,46 @@
+---
+title: "Surface_water_data_prep"
+author: "Wendel Raymond"
+date: "April 1, 2021"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+## Data preparation of SJC surface water
+This script will manipulate San Juan County surface water raw data to tall/tidy format. This will ease archival and analysis.
+
+```{r libraries, echo = FALSE, message = FALSE, warning = FALSE}
+library(tidyverse)
+
+theme_set(theme_classic())
+
+```
+
+### Data
+```{r}
+dat <- read.csv("../Historic data/Surface_Water_2019-2020_ALL 01-20-21_WR.csv", header = TRUE, stringsAsFactors = FALSE)
+```
+
+### Make tall data
+Levels of "Analyte.Name" need to become column names with "Result" and the filling value. Otherwise the rest of the data are in unique to a sampling instance.
+
+```{r}
+dat.tl <- spread(dat[, c(1:6)], Analyte.Name, Result)
+```
+
+### Clean up
+Fix column names, dates, append other useful data
+
+Date
+```{r}
+dat.tl$Date.Sampled <- as.Date(dat.tl$Date.Sampled,  format = "%m/%d/%Y")
+```
+
+Column names
+```{r}
+nams <- c("Sample_no", "Sample_desc", "Matrix", "Date_sampled", "E_coli_MF_CFU100mL", "F.coli_CFU100mL", "Total_KN_mgL", "Total_N03/N02_mgL", "Total_N03+N02_mgL", "Total_N_mg/L", "Total_P_mgL")
+
+colnames(dat.tl) <- nams
+```
+
