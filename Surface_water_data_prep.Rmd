@@ -26,7 +26,7 @@ dat <- read.csv("../Historic data/Surface_Water_2019-2020_ALL 01-20-21_WR.csv", 
 Levels of "Analyte.Name" need to become column names with "Result" and the filling value. Otherwise the rest of the data are in unique to a sampling instance.
 
 ```{r}
-dat.tl <- spread(dat[, c(1:6)], Analyte.Name, Result)
+dat.tl <- spread(dat[, c(1:8)], Analyte.Name, Result)
 ```
 
 ### Clean up
@@ -39,8 +39,13 @@ dat.tl$Date.Sampled <- as.Date(dat.tl$Date.Sampled,  format = "%m/%d/%Y")
 
 Column names
 ```{r}
-nams <- c("Sample_no", "Sample_desc", "Matrix", "Date_sampled", "E_coli_MF_CFU100mL", "F.coli_CFU100mL", "Total_KN_mgL", "Total_N03/N02_mgL", "Total_N03+N02_mgL", "Total_N_mg/L", "Total_P_mgL")
+nams <- c("sample_no", "sample_desc", "matrix", "date_sampled", "qualifier", "dilution_factor", "E_coli_MF_CFU100mL", "F.coli_CFU100mL", "total_KN_mgL", "total_N03/N02_mgL", "total_N03+N02_mgL", "total_N_mg/L", "total_P_mgL")
 
 colnames(dat.tl) <- nams
+```
+
+### Export
+```{r}
+write.csv(dat.tl, "../Historic data/SJC_Surface_Water_2019-2020_All.csv")
 ```
 
