@@ -46,6 +46,6 @@ colnames(dat.tl) <- nams
 
 ### Export
 ```{r}
-write.csv(dat.tl, "../Historic data/SJC_Surface_Water_2019-2020_All.csv")
+write.csv(dat.tl, "../Historic data/SJC_Surface_Water_2019-2020_All.csv", row.names = FALSE)
 ```
 
