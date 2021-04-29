@@ -23,7 +23,7 @@ gm_mean = function(x, na.rm=TRUE){
 ### Data
 Read in data water quality data from UW/Friday Harbor Labs monitoring effort
 ```{r, echo = FALSE, message = FALSE, warning = FALSE}
-dat <- read.csv("../Historic data/SJI_watershed_raw_data.csv", header = TRUE, stringsAsFactors = FALSE)
+dat <- read.csv(url("https://knb.ecoinformatics.org/knb/d1/mn/v2/object/urn%3Auuid%3A6e0b67fb-7694-45bb-a15c-9b9b5795ebb6", method = "libcurl"), header = TRUE, stringsAsFactors = FALSE)
 ```
 
 #### Data checking and adjustment
@@ -31,10 +31,10 @@ dat <- read.csv("../Historic data/SJI_watershed_raw_data.csv", header = TRUE, st
 str(dat)
 
 ## Format Date ##
-dat$Date <- as.Date(dat$Date,  format = "%m/%d/%Y")
+dat$Date <- as.Date(dat$date,  format = "%m/%d/%Y")
 
 ## Create Julian Date ##
-dat$Date_J <- format(dat$Date, "%j")
+dat$Date_J <- format(dat$date, "%j")
 ```
 
 ### Data summaries
@@ -44,18 +44,18 @@ I will also convert mg/L to umol/L 1 μg NO3/l = 1/ MW NO3 μg/l = 0.016128 μmo
 ```{r, echo = FALSE, message = FALSE, warning = FALSE}
 ## Mean over site and date. Not all params have multiple measures though ##
 dat.sum <- dat %>%
-  filter(site_no == "FB1" | site_no == "FB3" | site_no == "FB6") %>% 
-  group_by(site_no, Date) %>% 
-  summarise(Air_temp_C = mean(Air_temp_C, na.rm = TRUE),
-            Water_temp_C = mean(Water_temp_C, na.rm = TRUE),
-            DO_mgL = mean(DO_.mg.L, na.rm = TRUE),
+  filter(site_no != "FB2b") %>% 
+  group_by(site_no, date) %>% 
+  summarise(air_temp_C = mean(air_temp_C, na.rm = TRUE),
+            water_temp_C = mean(water_temp_C, na.rm = TRUE),
+            DO_mgL = mean(DO_mgL, na.rm = TRUE),
             pH = mean(pH, na.rm = TRUE),
-            Tur_NTU = mean(Turbidity_ntu, na.rm = TRUE),
-            F_Coli_col100mL = mean(F_coliform_col.100mL, na.rm = TRUE),
-            F_Coli_GM_col100mL = gm_mean(F_coliform_col.100mL, na.rm = TRUE),
-            NO3_mgL = mean(Nitrate_mg.L, na.rm = TRUE),
-            PO4_mgL = mean(Phosphate_mg.L, na.rm = TRUE),
-            Flow_cfs = mean(Flow_cfs, na.rm = TRUE))
+            turbidity_ntu = mean(turbidity_ntu, na.rm = TRUE),
+            F_coli_col100mL = mean(F_coliform_col100mL, na.rm = TRUE),
+            F_coli_GM_col100mL = gm_mean(F_coliform_col100mL, na.rm = TRUE),
+            NO3_mgL = mean(nitrate_mgL, na.rm = TRUE),
+            PO4_mgL = mean(phosphate_mgL, na.rm = TRUE),
+            flow_cfs = mean(flow_cfs, na.rm = TRUE))
 
 ## Convert NaNs to NA, yes use is.na ##
 dat.sum[is.na(dat.sum)] <- NA
