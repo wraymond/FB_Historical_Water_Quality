@@ -12,6 +12,7 @@ We will explore historical water wuality data collected around the False Bay wat
 
 ```{r libraries, echo = FALSE, message = FALSE, warning = FALSE}
 library(tidyverse)
+library(DT)
 
 theme_set(theme_classic())
 
@@ -31,10 +32,10 @@ dat <- read.csv(url("https://knb.ecoinformatics.org/knb/d1/mn/v2/object/urn%3Auu
 str(dat)
 
 ## Format Date ##
-dat$Date <- as.Date(dat$date,  format = "%m/%d/%Y")
+dat$date <- as.Date(dat$date,  format = "%m/%d/%Y")
 
 ## Create Julian Date ##
-dat$Date_J <- format(dat$date, "%j")
+dat$date_J <- format(dat$date, "%j")
 ```
 
 ### Data summaries
@@ -68,6 +69,25 @@ dat.sum$PO4_umol <- (dat.sum$PO4_mgL * 1000) * 0.010529
 dat.nut <- dat.sum %>% 
   filter(NO3_mgL > 0 & PO4_mgL > 0)
 ```
+
+#### Summary Table
+Table of mean values by month
+```{r}
+dat.mon.sum <- dat.sum %>% 
+  mutate(month = format(date, "%m")) %>% 
+  group_by(site_no, month) %>% 
+  summarise(mean_NO3 = mean(NO3_umol, na.rm = TRUE),
+            sd_NO3 = sd(NO3_umol, na.rm = TRUE),
+            max_NO3 = max(NO3_umol, na.rm = TRUE),
+            min_NO3 = min(NO3_umol, na.rm = TRUE),
+            mean_PO4 = mean(PO4_umol, na.rm = TRUE),
+            sd_PO4 = sd(PO4_umol, na.rm = TRUE),
+            max_PO4 = max(PO4_umol, na.rm = TRUE),
+            min_NO3 = min(PO4_umol, na.rm = TRUE))
+
+datatable(dat.mon.sum)
+```
+
 
 #### Map
 ![](https://depts.washington.edu/fhlk12/monitor/sanjuan/SanJuanGIS.jpg)
